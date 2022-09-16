@@ -1,0 +1,4 @@
+*/venv/
+.idea/
+*movie_pb2.py
+*movie_pb2_grpc.py
