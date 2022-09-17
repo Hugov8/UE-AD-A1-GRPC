@@ -1,49 +1,32 @@
-from flask import Flask, jsonify, make_response
+import grpc
+from concurrent import futures
+import showtime_pb2
+import showtime_pb2_grpc
 import json
 
-app = Flask(__name__)
+class ShowtimeServicer(showtime_pb2_grpc.ShowtimeServicer):
 
-PORT = 3202
-HOST = '0.0.0.0'
+    def __init__(self):
+        with open('{}/data/times.json'.format("."), "r") as jsf:
+            self.db = json.load(jsf)["schedule"]
 
-with open('{}/data/times.json'.format("."), "r") as jsf:
-    schedule = json.load(jsf)["schedule"]
+    def GetListSchedules(self, request, context):
+        for schedule in self.db:
+            yield showtime_pb2.ScheduleData(date=schedule["date"], movies=schedule["movies"])
 
+    def GetMoviesByDate(self, request, context):
+        for s in self.db:
+            if request.date == s["date"]:
+                return showtime_pb2.ScheduleData(date=s["date"], movies=s["movies"])
+        return showtime_pb2.ScheduleData(date="", movies=[])
 
-@app.route("/", methods=['GET'])
-def home():
-    return "<h1 style='color:blue'>Welcome to the Showtime service!</h1>"
-
-
-def map_schedule(date):
-    movies = []
-    for movie in date["movies"]:
-        movies.append({
-            "href": "http://localhost:3200/movies/" + movie,
-            "id": movie
-        })
-    return {
-        "date": date["date"],
-        "movies": movies
-    }
+def serve():
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    showtime_pb2_grpc.add_ShowtimeServicer_to_server(ShowtimeServicer(), server)
+    server.add_insecure_port('[::]:3002')
+    server.start()
+    server.wait_for_termination()
 
 
-@app.route("/json", methods=['GET'])
-def get_schedule():
-    res = []
-    for date in schedule:
-        res.append(map_schedule(date))
-    return make_response(jsonify(res), 200)
-
-
-@app.route("/showmovies/<date>", methods=['GET'])
-def get_movies_bydate(date):
-    for s in schedule:
-        if str(s["date"]) == str(date):
-            return make_response(jsonify(map_schedule(s)), 200)
-    return make_response(jsonify({"error": "schedule not found"}), 400)
-
-
-if __name__ == "__main__":
-    print("Server running in port %s" % (PORT))
-    app.run(host=HOST, port=PORT)
+if __name__ == '__main__':
+    serve()

@@ -2,6 +2,8 @@ import grpc
 
 import movie_pb2
 import movie_pb2_grpc
+import showtime_pb2
+import showtime_pb2_grpc
 
 
 def get_movie_by_id(stub,id):
@@ -49,6 +51,24 @@ def run():
         rep = stub.DeleteMovie(movie_pb2.MovieID(id="gogogoogogogog"))
         print(rep)
         get_list_movies(stub)
+
+        print("-------------- GetListMovies --------------")
+        get_list_movies(stub)
+
+    channel.close()
+
+    with grpc.insecure_channel('localhost:3002') as channel:
+        stub = showtime_pb2_grpc.ShowtimeStub(channel)
+
+        print("\r\n----------- GetListSchedules----------------")
+        all_schedules = stub.GetListSchedules(showtime_pb2.EmptyS())
+        for sched in all_schedules:
+            print("date: " + str(sched.date))
+            print("movies: " + str(sched.movies))
+
+        print("\r\n------------GetMoviesByDate-----------")
+        schedule = stub.GetMoviesByDate(showtime_pb2.ShowtimeDate(date="20151130"))
+        print(schedule)
 
     channel.close()
 
