@@ -4,7 +4,9 @@ import json
 from werkzeug.exceptions import NotFound
 import movie_pb2
 import movie_pb2_grpc
+import booking_pb2, booking_pb2_grpc
 import grpc
+from google.protobuf.json_format import MessageToJson
 
 app = Flask(__name__)
 
@@ -29,8 +31,18 @@ def get_json():
 def get_reservation(name):
     for user in users:
         if user["name"] == name:
-            reponse = requests.get("http://localhost:3201/bookings/" + user["id"])
-            return make_response(reponse.json(), reponse.status_code)
+            with grpc.insecure_channel('localhost:3000') as channel:
+                stub = booking_pb2_grpc.BookingStub(channel)
+                bookings_message = stub.GetBookingsByUser(booking_pb2.User(id=user["id"]))
+                channel.close()
+            if not bookings_message.userid == "":
+                booking = MessageToJson(bookings_message)
+            else:
+                booking = jsonify({
+                    "userid": user["id"],
+                    "dates": []
+                })
+            return make_response(booking, 200)
     return make_response(jsonify({"error": "Name not found"}), 400)
 
 @app.route("/users/addUser/<iduser>", methods=['POST'])
