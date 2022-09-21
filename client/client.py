@@ -4,6 +4,8 @@ import movie_pb2
 import movie_pb2_grpc
 import showtime_pb2
 import showtime_pb2_grpc
+import booking_pb2
+import booking_pb2_grpc
 
 
 def get_movie_by_id(stub,id):
@@ -71,6 +73,28 @@ def run():
         print(schedule)
 
     channel.close()
+
+    with grpc.insecure_channel('localhost:3000') as channel:
+        stub = booking_pb2_grpc.BookingStub(channel)
+
+        print("-------------- GetBookings -----------------")
+        all_bookings = stub.GetBookings(booking_pb2.EmptyBooking())
+        for booking in all_bookings:
+            print("userid: " + str(booking.userid))
+            print("dates: " + str(booking.dates))
+
+        print("----------- GetBookingsByUser ---------------")
+        booking_for_user = stub.GetBookingsByUser(booking_pb2.User(id="dwight_schrute"))
+        print("userid: " + str(booking_for_user.userid))
+        print("dates: " + str(booking_for_user.dates))
+
+        print("------------ CreateBookingForUser ----------")
+        booking = stub.CreateBookingForUser(booking_pb2.NewBooking(userid="dwight_schrute", date="20151130", movieid="720d006c-3a57-4b6a-b18f-9b713b073f3c"))
+        print(booking)
+        booking_for_user = stub.GetBookingsByUser(booking_pb2.User(id="dwight_schrute"))
+        print("userid: " + str(booking_for_user.userid))
+        print("dates: " + str(booking_for_user.dates))
+
 
 if __name__ == '__main__':
     run()
