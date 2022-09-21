@@ -34,6 +34,12 @@ message OperationSuccess{
     string comment = 2;
 }
 
+<<<<<<< Updated upstream
  message Empty {
 
 }
+=======
+ message Empty{
+
+ }
+>>>>>>> Stashed changes

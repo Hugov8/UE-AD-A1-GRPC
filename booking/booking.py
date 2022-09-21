@@ -4,6 +4,10 @@ import booking_pb2_grpc
 import json
 from concurrent import futures
 import grpc
+import showtime_pb2
+import showtime_pb2_grpc
+
+
 
 app = Flask(__name__)
 
@@ -34,14 +38,17 @@ def get_bookings_by_id(userid):
 
 @app.route("/bookings/<userid>", methods=['POST'])
 def create_booking(userid):
-    req = request.get_json()
-
+    req = request.args
+    print(req)
     if not ("movieid" in req.keys() and "date" in req.keys()):
         return make_response(jsonify({"error": "invalid parameters"}), 400)
 
-    movies = requests.get("http://localhost:3202/showmovies/" + req["date"]).json()
-    if not "movies" in movies.keys() or not req["movieid"] in movies["movies"]:
-        return make_response(jsonify({"error": "this showtime doesn't exists"}), 400)
+    with grpc.insecure_channel('localhost:3002') as channel:
+        stub = showtime_pb2_grpc.ShowtimeStub(channel)
+        movies = stub.GetMoviesByDate(showtime_pb2.ShowtimeDate(date=str(req["date"])))
+        if not req["movieid"] in movies.movies:
+            return make_response(jsonify({"error": "this showtime doesn't exists"}), 400)
+        channel.close()
 
     for booking in bookings:
         if booking["userid"] == userid:
@@ -51,14 +58,14 @@ def create_booking(userid):
                     if req["movieid"] in date["movies"]:
                         return make_response(jsonify({"error": "booking already exists for this user"}), 400)
                     date["movies"].append(req["movieid"])
-                    return make_response(jsonify(booking), 200)
+                    return make_response(jsonify(bookings), 200)
             new_date = {
                 "date": req["date"],
                 "movies": [req["movieid"]]
             }
             booking["dates"].append(new_date)
             print(booking)
-            return make_response(jsonify(booking), 200)
+            return make_response(jsonify(bookings), 200)
 
     new_booking = {
         "userid": userid,
@@ -70,7 +77,7 @@ def create_booking(userid):
         ]
     }
     bookings.append(new_booking)
-    return make_response(jsonify(new_booking), 200)
+    return make_response(jsonify(bookings), 200)
 
 class BookingServicer(booking_pb2_grpc.BookingServicer):
     def __init(self):
