@@ -4,3 +4,5 @@
 *movie_pb2_grpc.py
 *showtime_pb2.py
 *showtime_pb2_grpc.py
+*booking_pb2.py
+*booking_pb2_grpc.py

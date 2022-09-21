@@ -1,1 +1,29 @@
+syntax = "proto3";
 
+service Booking {
+  rpc GetBookings(EmptyBooking) returns (stream BookingDetails) {}
+  rpc GetBookingsByUser(User) returns (BookingDetails) {}
+  rpc CreateBookingForUser(NewBooking) returns (BookingDetails) {}
+}
+
+message EmptyBooking {}
+
+message User {
+  string id = 1;
+}
+
+message NewBooking {
+  string userid = 1;
+  string movieid = 2;
+  string date = 3;
+}
+
+message BookingDetails {
+  string userid = 1;
+  repeated Date dates = 2;
+}
+
+message Date {
+  string date = 1;
+  repeated string movies = 2;
+}
