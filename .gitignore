@@ -6,3 +6,9 @@
 *showtime_pb2_grpc.py
 *booking_pb2.py
 *booking_pb2_grpc.py
+*booking/__pycache__/booking_pb2.cpython-38.pyc
+*booking/__pycache__/booking_pb2_grpc.cpython-38.pyc
+*movie/__pycache__/movie_pb2.cpython-38.pyc
+*movie/__pycache__/movie_pb2_grpc.cpython-38.pyc
+*showtime/__pycache__/showtime_pb2.cpython-38.pyc
+*showtime/__pycache__/showtime_pb2_grpc.cpython-38.pyc
