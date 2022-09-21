@@ -1,7 +1,5 @@
-from flask import Flask, render_template, request, jsonify, make_response
-import requests
+from flask import Flask, request, jsonify, make_response
 import json
-from werkzeug.exceptions import NotFound
 import movie_pb2
 import movie_pb2_grpc
 import booking_pb2, booking_pb2_grpc
@@ -60,20 +58,22 @@ def addUser(iduser):
 
 @app.route("/user/<user_id>/movies", methods=['GET'])
 def get_movies_for_user(user_id):
-    with grpc.insecure_channel('localhost:3001') as channel:
-        stub = movie_pb2_grpc.MovieStub(channel)
-        rep = requests.get("http://localhost:3201/bookings/" + user_id)
-        if(rep.status_code != 200):
-            return make_response(rep.json(), rep.status_code)
-
-        bookings = rep.json()
-        movie_list = []
-        for date in bookings["dates"]:
-            for movie in date["movies"]:
-                movieID = movie_pb2.MovieID(id=movie)
-                movie_details = stub.GetMovieByID(movieID)
-                movie_list.append({"date": date["date"], "title": movie_details.title})
+    with grpc.insecure_channel('localhost:3000') as channel:
+        stub = booking_pb2_grpc.BookingStub(channel)
+        bookings = stub.GetBookingsByUser(booking_pb2.User(id=user_id))
         channel.close()
+    if bookings.userid == "":
+        return make_response(jsonify([]), 200)
+
+    movie_list = []
+    for date in bookings.dates:
+        for movie in date.movies:
+            movieID = movie_pb2.MovieID(id=movie)
+            with grpc.insecure_channel('localhost:3001') as channel:
+                stub = movie_pb2_grpc.MovieStub(channel)
+                movie_details = stub.GetMovieByID(movieID)
+                channel.close()
+            movie_list.append({"date": date.date, "title": movie_details.title})
     return make_response(jsonify(movie_list), 200)
 
 
