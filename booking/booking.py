@@ -1,6 +1,9 @@
 import requests.utils
 from flask import Flask, request, jsonify, make_response
+import booking_pb2_grpc
 import json
+from concurrent import futures
+import grpc
 
 app = Flask(__name__)
 
@@ -69,7 +72,17 @@ def create_booking(userid):
     bookings.append(new_booking)
     return make_response(jsonify(new_booking), 200)
 
+class BookingServicer(booking_pb2_grpc.BookingServicer):
+    def __init(self):
+        with open('{}/data/bookings.json'.format("."), "r") as jsf:
+            self.db = json.load(jsf)["bookings"]
 
-if __name__ == "__main__":
-    print("Server running in port %s" % (PORT))
-    app.run(host=HOST, port=PORT)
+def serve():
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    booking_pb2_grpc.add_BookingServicer_to_server(BookingServicer(), server)
+    server.add_insecure_port('[::]:3001')
+    server.start()
+    server.wait_for_termination()
+
+if __name__ == '__main__':
+    serve()
