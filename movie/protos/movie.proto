@@ -3,14 +3,11 @@ syntax = "proto3";
 service Movie {
     rpc GetMovieByID(MovieID) returns (MovieData) {}
     rpc GetListMovies(Empty) returns (stream MovieData) {}
-<<<<<<< HEAD
     rpc GetMovieByTitle(MovieTitle) returns (MovieData) {}
     rpc GetMovieRate(MovieID) returns (MovieRate) {}
     rpc AddMovie(MovieData) returns (OperationSuccess){}
     rpc ModifyMovie(MovieData) returns (OperationSuccess){}
     rpc DeleteMovie(MovieID) returns (OperationSuccess){}
-=======
->>>>>>> 6b88be6259f92c034ff7cfd82b22c2034cb337af
 }
 
 message MovieID {
@@ -32,17 +29,11 @@ message MovieData {
     string id = 4;
 }
 
-<<<<<<< HEAD
 message OperationSuccess{
     bool success = 1;
     string comment = 2;
 }
 
- message Empty{
-
- }
-=======
-message Empty {
+ message Empty {
 
 }
->>>>>>> 6b88be6259f92c034ff7cfd82b22c2034cb337af
