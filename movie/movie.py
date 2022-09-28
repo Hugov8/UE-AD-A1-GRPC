@@ -5,6 +5,7 @@ import json
 
 class MovieServicer(movie_pb2_grpc.MovieServicer):
 
+    #initialise la base de données
     def __init__(self):
         with open('{}/data/movies.json'.format("."), "r") as jsf:
             self.db = json.load(jsf)["movies"]
@@ -15,6 +16,8 @@ class MovieServicer(movie_pb2_grpc.MovieServicer):
                 print("Movie found!")
                 return movie_pb2.MovieData(title=movie['title'], rating=movie['rating'], director=movie['director'], id=movie['id'])
         return movie_pb2.MovieData(title="", rating=0, director="", id="")
+    
+    #yield pour renvoyer un stream de Movie
     def GetListMovies(self, request, context):
         for movie in self.db:
             yield movie_pb2.MovieData(title=movie['title'], rating=movie['rating'], director=movie['director'], id=movie['id'])
@@ -29,6 +32,8 @@ class MovieServicer(movie_pb2_grpc.MovieServicer):
         for movie in self.db:
             if request.id == movie["id"]:
                 return movie_pb2.MovieRate(rating=movie["rating"])
+    
+    #Renvoie un message OperationSuccess pour savoir si le film a bien été ajouté avec un commentaire
     def AddMovie(self, request, context):
         for movie in self.db:
             if movie["id"] == request.id:
@@ -45,6 +50,7 @@ class MovieServicer(movie_pb2_grpc.MovieServicer):
                 movie["director"] = request.director
                 return movie_pb2.OperationSuccess(success=True, comment="Film modified")
         return movie_pb2.OperationSuccess(success=False, comment="Film not found")
+    
     def DeleteMovie(self, request, context):
         for movie in self.db:
             if request.id==movie["id"]:

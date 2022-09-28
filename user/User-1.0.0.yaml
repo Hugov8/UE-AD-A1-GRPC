@@ -1,0 +1,183 @@
+openapi: 3.0.3
+info:
+  title: User API
+  description: This is the API of the User service
+  version: 1.0.0
+  contact:
+    name: Rémi C. / Hugo V.
+servers:
+  - url: 'https'
+paths:
+  /:
+    get:
+      responses:
+        "200":
+          description: welcome message
+          content:
+            text/html:
+              schema:
+                type: string
+                example: <h1>Welcome</h1>
+      summary: home page of the service
+  /users:
+    get:
+      responses:
+        "200":
+          description: json list of the users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllUsers'
+  /users/names/{name}/getreservation:
+    get:
+      parameters:
+        - name : name
+          in: path
+          description: Full name of the user
+          required: true
+          style: simple
+          explode: false
+          schema:
+            maximum: 1
+            minimum: 1
+            type: string
+
+      responses:
+        "200":
+          description: movie list for a username
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserBookings'
+  /users/addUser/{user_id}:
+    post:
+      tags:
+      - admins
+      summary: add a new user
+      description: Adds an user to the system
+      operationId: addUser
+      parameters:
+      - name: userid
+        in: path
+        description: Movie ID.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          maximum: 1
+          minimum: 1
+          type: string
+      - name: name
+        in: query
+        required: true
+        schema:
+          maximum: 1
+          minimum: 1
+          type: string
+      - name: last_active
+        in: query
+        required: true
+        schema:
+          maximum: 1
+          minimum: 1
+          type: string
+      requestBody:
+        description: User item to add
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        "200":
+          description: Movie created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "409":
+          description: an existing item already exists
+        "400":
+          description: all arguments are not given
+  /user/{user_id}/movies:
+    get:
+      parameters:
+        - name: user_id
+          in: path
+          description: Id of the user
+          required: true
+          style: simple
+          schema:
+            maximum: 1
+            minimum: 1
+            type: string
+          
+      responses:
+        "200":
+          description: movie names list for a user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components'
+components:
+  schemas:
+    AllUsers:
+      required:
+        - users
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+    User:
+      required:
+        - id
+        - name
+        - last_active
+      type: object
+      properties:
+        id:
+          type: string
+          example: "chris_rivers"
+        name:
+          type: string
+          example: "Chris Rivers"
+        last_active:
+          type: string
+          example: "20151130"
+    UserBookings:
+      required:
+        - dates
+        - userid
+      type: object
+      properties:
+        dates:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                example: "20150310"
+              movies:
+                type: array
+                items:
+                  type: string
+                  example: "267eedb8-0f5d-42d5-8f43-72426b9fb3e6"
+        userid:
+          type: string
+          example: "chris_rivers"
+    UserMovies:
+      type: array
+      items:
+        type: object
+        required:
+          - date
+          - title
+        properties:
+          date:
+            type: string
+            example: "20150312"
+          title:
+            type: string
+            example: "Creed"

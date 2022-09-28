@@ -6,10 +6,12 @@ import json
 
 class ShowtimeServicer(showtime_pb2_grpc.ShowtimeServicer):
 
+    #Initialise la base de données
     def __init__(self):
         with open('{}/data/times.json'.format("."), "r") as jsf:
             self.db = json.load(jsf)["schedule"]
 
+    #Envoie stream de schedules
     def GetListSchedules(self, request, context):
         for schedule in self.db:
             yield showtime_pb2.ScheduleData(date=schedule["date"], movies=schedule["movies"])

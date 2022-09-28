@@ -33,6 +33,7 @@ message OperationSuccess{
     bool success = 1;
     string comment = 2;
 }
- message Empty {
+
+message Empty {
 
 }

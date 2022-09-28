@@ -28,8 +28,10 @@ def get_json():
 @app.route("/users/names/<name>/getreservation", methods=['GET'])
 def get_reservation(name):
     for user in users:
+        #Check le bon nom
         if user["name"] == name:
-            with grpc.insecure_channel('localhost:3000') as channel:
+            #utilisation de l'api booking
+            with grpc.insecure_channel('booking:3000') as channel:
                 stub = booking_pb2_grpc.BookingStub(channel)
                 bookings_message = stub.GetBookingsByUser(booking_pb2.User(id=user["id"]))
                 channel.close()
@@ -43,6 +45,7 @@ def get_reservation(name):
             return make_response(booking, 200)
     return make_response(jsonify({"error": "Name not found"}), 400)
 
+#Ajoute un user
 @app.route("/users/addUser/<iduser>", methods=['POST'])
 def addUser(iduser):
    for user in users:
@@ -58,7 +61,8 @@ def addUser(iduser):
 
 @app.route("/user/<user_id>/movies", methods=['GET'])
 def get_movies_for_user(user_id):
-    with grpc.insecure_channel('localhost:3000') as channel:
+    #Appel à booking
+    with grpc.insecure_channel('booking:3000') as channel:
         stub = booking_pb2_grpc.BookingStub(channel)
         bookings = stub.GetBookingsByUser(booking_pb2.User(id=user_id))
         channel.close()
@@ -69,7 +73,8 @@ def get_movies_for_user(user_id):
     for date in bookings.dates:
         for movie in date.movies:
             movieID = movie_pb2.MovieID(id=movie)
-            with grpc.insecure_channel('localhost:3001') as channel:
+            #appel à movie
+            with grpc.insecure_channel('movie:3001') as channel:
                 stub = movie_pb2_grpc.MovieStub(channel)
                 movie_details = stub.GetMovieByID(movieID)
                 channel.close()
