@@ -1,6 +1,5 @@
-:'
-Script permettant de générer les codes grpc et de les copier dans les fichiers en ayant besoin
-'
+#Script permettant de générer les codes grpc et de les copier dans les fichiers en ayant besoin
+
 #Génération grpc movie
 cd movie
 python3 -m grpc_tools.protoc --proto_path=./protos --python_out=. --grpc_python_out=. movie.proto
