@@ -5,18 +5,19 @@ import grpc
 import showtime_pb2
 import showtime_pb2_grpc
 
+
 class BookingServicer(booking_pb2_grpc.BookingServicer):
-    #Initialise la base de données
+    # Init the db
     def __init__(self):
         with open('{}/data/bookings.json'.format("."), "r") as jsf:
             self.db = json.load(jsf)["bookings"]
 
-    #envoie un streal de bookings
+    # Returns all the bookings
     def GetBookings(self, request, context):
         for booking in self.db:
             yield booking_pb2.BookingDetails(userid=booking["userid"], dates=booking["dates"])
 
-    #Si aucune reservation n'est trouvé, on envoie un booking dont les éléments sont vides
+    # If no reservation is found, we send a booking with empty elements
     def GetBookingsByUser(self, request, context):
         userid = request.id
         for booking in self.db:
@@ -24,13 +25,13 @@ class BookingServicer(booking_pb2_grpc.BookingServicer):
                 return booking_pb2.BookingDetails(userid=booking["userid"], dates=booking["dates"])
         return booking_pb2.BookingDetails(userid="", dates=[])
 
-    #Si le movie est déjà présent, on envoie un booking avec des éléments vides
+    # If the movie is already present, we send a booking with empty elements
     def CreateBookingForUser(self, request, context):
         userid = request.userid
         movieid = request.movieid
         movie_date = request.date
 
-        #Check si le movie est bien disponible à la date donnée
+        # Check if the movie is available on the given date
         with grpc.insecure_channel('showtime:3002') as channel:
             stub = showtime_pb2_grpc.ShowtimeStub(channel)
             movies = stub.GetMoviesByDate(showtime_pb2.ShowtimeDate(date=movie_date))
@@ -39,27 +40,27 @@ class BookingServicer(booking_pb2_grpc.BookingServicer):
             channel.close()
 
         for booking in self.db:
-            #Check le bon user
+            # Retrieves the right user
             if booking["userid"] == userid:
-                # ajoute la reservation et le renvoie
+                # add the booking and return it
                 for date in booking["dates"]:
-                    #check si la date et déjà présente et ajoute le film a celle ci
+                    # checks if the date exists et add the film to it
                     if date["date"] == movie_date:
-                        #Check si le film est déjà programmé à cette date
+                        # Check if the film already exists in this date
                         if movieid in date["movies"]:
                             return booking_pb2.BookingDetails(userid="", dates=[])
-                        #Ajoute et renvoie la réservation
+                        # Add the movie and return the booking
                         date["movies"].append(movieid)
                         return booking_pb2.BookingDetails(userid=userid, dates=booking["dates"])
-                
-                #Si la date n'est pas présente, n l'ajoute à la liste ave l'id du film
+
+                # If the date is not present, add it to the list with the film id
                 new_date = {
                     "date": movie_date,
                     "movies": [movieid]
                 }
                 booking["dates"].append(new_date)
                 return booking_pb2.BookingDetails(userid=booking["userid"], dates=booking["dates"])
-        #Si l'user n'a jamais fait de réservation on crée une nouvelle booking
+        # If the user has never made a reservation we create a new booking
         new_booking = {
             "userid": userid,
             "dates": [

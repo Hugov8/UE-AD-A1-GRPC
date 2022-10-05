@@ -8,33 +8,35 @@ import booking_pb2
 import booking_pb2_grpc
 
 
-def get_movie_by_id(stub,id):
+def get_movie_by_id(stub, id):
     movie = stub.GetMovieByID(id)
     print(movie)
+
 
 def get_list_movies(stub):
     allmovies = stub.GetListMovies(movie_pb2.Empty())
     for movie in allmovies:
         print("Movie called %s" % (movie.title))
 
+
 def run():
     # NOTE(gRPC Python Team): .close() is possible on a channel and should be
     # used in circumstances in which the with statement does not fit the needs
     # of the code.
 
-    ###Test sur API grpc movie
+    # Test sur API grpc movie
     with grpc.insecure_channel('movie:3001') as channel:
         stub = movie_pb2_grpc.MovieStub(channel)
 
         print("-------------- GetMovieByID --------------")
         movieid = movie_pb2.MovieID(id="a8034f44-aee4-44cf-b32c-74cf452aaaae")
         get_movie_by_id(stub, movieid)
-        
+
         print("-------------- GetListMovies --------------")
         get_list_movies(stub)
 
         print("-------------- Adding a new film ----------")
-        op = stub.AddMovie(movie_pb2.MovieData(title="test", rating = 5.0, director = "moi", id = "gogogoogogogog"))
+        op = stub.AddMovie(movie_pb2.MovieData(title="test", rating=5.0, director="moi", id="gogogoogogogog"))
         print(op)
         get_list_movies(stub)
 
@@ -47,7 +49,7 @@ def run():
         print(rep)
 
         print("-------------- Modify a movie -------------")
-        rep = stub.ModifyMovie(movie_pb2.MovieData(title="retest", rating=2.5, director="moi", id="hgogogoogogogog")) 
+        rep = stub.ModifyMovie(movie_pb2.MovieData(title="retest", rating=2.5, director="moi", id="hgogogoogogogog"))
         print(rep)
         get_movie_by_id(stub, movie_pb2.MovieID(id="gogogoogogogog"))
 
@@ -61,7 +63,7 @@ def run():
 
     channel.close()
 
-    ###Test sur API grpc Showtime
+    # Test sur API grpc Showtime
     with grpc.insecure_channel('showtime:3002') as channel:
         stub = showtime_pb2_grpc.ShowtimeStub(channel)
 
@@ -77,7 +79,7 @@ def run():
 
     channel.close()
 
-    ###Test sur API grpc booking
+    # Test sur API grpc booking
     with grpc.insecure_channel('booking:3003') as channel:
         stub = booking_pb2_grpc.BookingStub(channel)
 
@@ -93,7 +95,8 @@ def run():
         print("dates: " + str(booking_for_user.dates))
 
         print("------------ CreateBookingForUser ----------")
-        booking = stub.CreateBookingForUser(booking_pb2.NewBooking(userid="dwight_schrute", date="20151130", movieid="720d006c-3a57-4b6a-b18f-9b713b073f3c"))
+        booking = stub.CreateBookingForUser(booking_pb2.NewBooking(userid="dwight_schrute", date="20151130",
+                                                                   movieid="720d006c-3a57-4b6a-b18f-9b713b073f3c"))
         print(booking)
         booking_for_user = stub.GetBookingsByUser(booking_pb2.User(id="dwight_schrute"))
         print("userid: " + str(booking_for_user.userid))
