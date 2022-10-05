@@ -4,23 +4,26 @@ import showtime_pb2
 import showtime_pb2_grpc
 import json
 
+
 class ShowtimeServicer(showtime_pb2_grpc.ShowtimeServicer):
 
-    #Initialise la base de données
+    # Init the db
     def __init__(self):
         with open('{}/data/times.json'.format("."), "r") as jsf:
             self.db = json.load(jsf)["schedule"]
 
-    #Envoie stream de schedules
+    # Return the list of all the schedules
     def GetListSchedules(self, request, context):
         for schedule in self.db:
             yield showtime_pb2.ScheduleData(date=schedule["date"], movies=schedule["movies"])
 
+    # Return all the movies that are playing on this date
     def GetMoviesByDate(self, request, context):
         for s in self.db:
             if request.date == s["date"]:
                 return showtime_pb2.ScheduleData(date=s["date"], movies=s["movies"])
         return showtime_pb2.ScheduleData(date="", movies=[])
+
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
