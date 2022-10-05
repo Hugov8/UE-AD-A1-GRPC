@@ -28,9 +28,9 @@ def get_json():
 @app.route("/users/names/<name>/getreservation", methods=['GET'])
 def get_reservation(name):
     for user in users:
-        #Check le bon nom
+        # Retrieves the user with the right name
         if user["name"] == name:
-            #utilisation de l'api booking
+            # Get all the bookings for this user
             with grpc.insecure_channel('booking:3003') as channel:
                 stub = booking_pb2_grpc.BookingStub(channel)
                 bookings_message = stub.GetBookingsByUser(booking_pb2.User(id=user["id"]))
@@ -45,23 +45,27 @@ def get_reservation(name):
             return make_response(booking, 200)
     return make_response(jsonify({"error": "Name not found"}), 400)
 
-#Ajoute un user
+
+# Add an user
 @app.route("/users/addUser/<iduser>", methods=['POST'])
 def addUser(iduser):
-   for user in users:
-      if user["id"]==iduser:
-         return make_response(jsonify({"error": "User id already exist"}))
-   
-   if request.args:
-      if request.args["name"] and request.args["last_active"]:
-         newUser = {"id": iduser, "name": request.args["name"], "last_active": request.args["last_active"]}
-         users.append(newUser)
-         return make_response(jsonify(newUser), 200)
-   return make_response(jsonify({"error":"One or more argument missing"}),400)
+    # Checks if the user already exists
+    for user in users:
+        if user["id"] == iduser:
+            return make_response(jsonify({"error": "User id already exist"}))
+
+    # If not, we create it
+    if request.args:
+        if request.args["name"] and request.args["last_active"]:
+            newUser = {"id": iduser, "name": request.args["name"], "last_active": request.args["last_active"]}
+            users.append(newUser)
+            return make_response(jsonify(newUser), 200)
+    return make_response(jsonify({"error": "One or more argument missing"}), 400)
+
 
 @app.route("/user/<user_id>/movies", methods=['GET'])
 def get_movies_for_user(user_id):
-    #Appel à booking
+    # Retrieves the bookings for this user
     with grpc.insecure_channel('booking:3003') as channel:
         stub = booking_pb2_grpc.BookingStub(channel)
         bookings = stub.GetBookingsByUser(booking_pb2.User(id=user_id))
@@ -73,7 +77,7 @@ def get_movies_for_user(user_id):
     for date in bookings.dates:
         for movie in date.movies:
             movieID = movie_pb2.MovieID(id=movie)
-            #appel à movie
+            # Retrieves movie informations for the bookings
             with grpc.insecure_channel('movie:3001') as channel:
                 stub = movie_pb2_grpc.MovieStub(channel)
                 movie_details = stub.GetMovieByID(movieID)
