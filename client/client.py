@@ -78,7 +78,7 @@ def run():
     channel.close()
 
     ###Test sur API grpc booking
-    with grpc.insecure_channel('booking:3000') as channel:
+    with grpc.insecure_channel('booking:3003') as channel:
         stub = booking_pb2_grpc.BookingStub(channel)
 
         print("-------------- GetBookings -----------------")

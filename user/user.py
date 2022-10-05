@@ -8,7 +8,7 @@ from google.protobuf.json_format import MessageToJson
 
 app = Flask(__name__)
 
-PORT = 3203
+PORT = 3004
 HOST = '0.0.0.0'
 
 with open('{}/data/users.json'.format("."), "r") as jsf:
@@ -31,7 +31,7 @@ def get_reservation(name):
         #Check le bon nom
         if user["name"] == name:
             #utilisation de l'api booking
-            with grpc.insecure_channel('booking:3000') as channel:
+            with grpc.insecure_channel('booking:3003') as channel:
                 stub = booking_pb2_grpc.BookingStub(channel)
                 bookings_message = stub.GetBookingsByUser(booking_pb2.User(id=user["id"]))
                 channel.close()
@@ -62,7 +62,7 @@ def addUser(iduser):
 @app.route("/user/<user_id>/movies", methods=['GET'])
 def get_movies_for_user(user_id):
     #Appel à booking
-    with grpc.insecure_channel('booking:3000') as channel:
+    with grpc.insecure_channel('booking:3003') as channel:
         stub = booking_pb2_grpc.BookingStub(channel)
         bookings = stub.GetBookingsByUser(booking_pb2.User(id=user_id))
         channel.close()
