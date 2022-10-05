@@ -22,7 +22,7 @@ docker-compose up
 Après avoir lancé l'application, l'accès au service User (qui est le point d'entrée de l'application) se fait via le lien http://localhost:3004/
 
 
-Pour arrêter les services, entrez les lignes de commandes : 
+Pour arrêter les services, faites Ctrl+C et entrez les lignes de commandes : 
 ```bash
 docker-compose down
 docker images purge
@@ -60,7 +60,10 @@ with grpc.insecure_channel('movie:3001') as channel:
     #Fermeture de la connexion
     channel.close()
 ```
-
+Le dossier client permet de tester le bon fonctionnement de toutes les API. Pour l'utiliser, lancer les différents services (cf [partie précédente](#installation)) et lancer le fichier client.py via la commande :
+```bash
+python3 client/client.py
+```
 
 ## Documentation
 La documentation de l'API est disponible via les fichiers protos ou une documentation Open API dans le cas du service User.  

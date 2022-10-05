@@ -25,7 +25,7 @@ def run():
     # of the code.
 
     # Test sur API grpc movie
-    with grpc.insecure_channel('movie:3001') as channel:
+    with grpc.insecure_channel('localhost:3001') as channel:
         stub = movie_pb2_grpc.MovieStub(channel)
 
         print("-------------- GetMovieByID --------------")
@@ -64,7 +64,7 @@ def run():
     channel.close()
 
     # Test sur API grpc Showtime
-    with grpc.insecure_channel('showtime:3002') as channel:
+    with grpc.insecure_channel('localhost:3002') as channel:
         stub = showtime_pb2_grpc.ShowtimeStub(channel)
 
         print("\r\n----------- GetListSchedules----------------")
@@ -80,7 +80,7 @@ def run():
     channel.close()
 
     # Test sur API grpc booking
-    with grpc.insecure_channel('booking:3003') as channel:
+    with grpc.insecure_channel('localhost:3003') as channel:
         stub = booking_pb2_grpc.BookingStub(channel)
 
         print("-------------- GetBookings -----------------")
